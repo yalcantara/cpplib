@@ -1,0 +1,19 @@
+{
+    "configurations": [
+      {
+        "name": "C++ x64",
+        "intelliSenseMode": "gcc-x64",
+        "includePath": ["${workspaceFolder}/include", "../external/odpi/include"],
+        "forcedInclude": [],
+        "compilerPath": "/usr/bin/g++",
+        "cStandard": "c11",
+        "cppStandard": "c++17",
+        "browse": {
+          "path": ["${workspaceFolder}", "../external/odpi/include"],
+          "limitSymbolsToIncludedHeaders": true,
+          "databaseFilename": ""
+        }
+      }
+    ],
+    "version": 4
+  }
