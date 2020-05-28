@@ -16,24 +16,10 @@ using namespace ylib::logging;
 
 int main(){
 
-    var log = Logger::get("main");
+    Int64 n = 23;
+    string val = numFill(n, 3, '0');
 
-    DBEnvironment env;
-    string user = std::getenv("app_user");
-    string pass = std::getenv("app_pass");
-    string tnsn = std::getenv("app_tnsn");
+    println(val);
 
-
-    var conn = env.connect(user, pass, tnsn);
-    var stmt = conn.statement("insert into employees(name) values (:1)");
-
-    stmt.setString("1", "Lebron");
-    stmt.exec();
-    var rowId = stmt.getLastRowId();
-
-    println(rowId);
-    conn.commit();
-
-    log.info("pop");
     return EXIT_SUCCESS;
 }

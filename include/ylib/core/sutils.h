@@ -56,8 +56,9 @@ string numFill(Int64 num, UInt16 count, const char c) {
 	size_t diff = count - len;
 	stringstream ss;
 
+	string cs = std::to_string(c);
 	for (size_t i = 0; i < diff; i++) {
-		ss << c;
+		ss << cs;
 	}
 
 	ss << snum;

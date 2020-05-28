@@ -286,7 +286,7 @@ public:
         ss << ':';
         ss << numFill(_sec, 2, '0');
         ss << '.';
-        ss << numFill(_milli, 2, '0');
+        ss << numFill(_milli, 3, '0');
         return ss.str();
     }
 };
@@ -373,7 +373,7 @@ public:
         ss << ':';
         ss << numFill(_sec, 2, '0');
         ss << '.';
-        ss << numFill(_milli, 2, '0');
+        ss << numFill(_milli, 3, '0');
         return ss.str();
     }
 };
