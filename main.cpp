@@ -9,6 +9,7 @@
 #include <ylib/db/dpiw.h>
 #include <ylib/logging/Logger.h>
 
+using namespace ylib::core;
 using namespace ylib::db::dpiw;
 using namespace ylib::logging;
 
@@ -16,10 +17,8 @@ using namespace ylib::logging;
 
 int main(){
 
-    Int64 n = 23;
-    string val = numFill(n, 3, '0');
+    Time a{3, 3, 3, 10};
 
-    println(val);
-
+println(a.toString());
     return EXIT_SUCCESS;
 }

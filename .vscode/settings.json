@@ -12,6 +12,7 @@
         "istream": "cpp",
         "ostream": "cpp",
         "optional": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "sstream": "cpp"
     }
 }

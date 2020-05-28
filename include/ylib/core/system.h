@@ -105,7 +105,7 @@ tuple<tm, Int16> instant(Bool gmt) {
 
     auto duration = now.time_since_epoch();
     Int64 milliDuration = duration_cast<std::chrono::milliseconds>(duration).count();
-    Int16 milli = (Int16)(milliDuration % 1000);
+    Int16 milli = (Int16)(milliDuration % (Int16)1000);
 
     time_t timeT = system_clock::to_time_t(now);
     
