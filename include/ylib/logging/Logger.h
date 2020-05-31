@@ -116,7 +116,7 @@ public:
 
 
 
-    void info(string& msg) {
+    void info(const string& msg) {
 
         Entry entry;
         entry.level = "INFO "; //extra space for padding with ERROR
@@ -135,7 +135,7 @@ public:
         info(txt);
     }
 
-    void error(string& msg) {
+    void error(const string& msg) {
         Entry entry;
         entry.level = "ERROR";
         entry.msg = msg;
@@ -148,12 +148,25 @@ public:
         error(ref);
     }
 
-    void error(std::exception& ex) {
+    void error(const std::exception& ex) {
         const char* msg = ex.what();
         string smsg{ msg };
         string name = typeid(ex).name();
         string txt = "Exception thrown " + name +": " + smsg;
         error(txt);
+    }
+
+    void warn(const string& msg) {
+        Entry entry;
+        entry.level = "WARN "; //extra space for padding with ERROR
+        entry.msg = msg;
+
+        write(entry);
+    }
+
+    void warn(const char* msg){
+        string smsg = msg;
+        warn(smsg);
     }
 };
 }
