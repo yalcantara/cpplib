@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstdarg>
+#include <cstdint>
 
 using namespace std;
 

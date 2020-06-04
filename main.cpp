@@ -19,6 +19,6 @@ int main(){
 
     Time a{3, 3, 3, 10};
 
-println(a.toString());
+    println(a.toString());
     return EXIT_SUCCESS;
 }

@@ -67,5 +67,36 @@ namespace io {
     void write(string&& path, string& content) {
         write(path, content);
     }
+
+
+    string ffull(const char* path){
+
+
+        FILE *f = fopen(path, "rb");
+        if (f == NULL) {
+            string spath = path;
+            string msg = "Could not open file: '" + spath +"'.";
+            throw Exception(msg);
+        }
+
+        
+        fseek(f, 0, SEEK_END);
+        long fsize = ftell(f);
+        fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
+
+        char* txt = (char*)malloc(fsize + 1);
+        fread(txt, 1, fsize, f);
+        fclose(f);
+
+        txt[fsize] = 0;
+
+        string ans = txt;
+        free(txt);
+
+        return ans;
+    }
+
+
+
 }
 }

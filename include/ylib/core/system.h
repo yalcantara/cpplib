@@ -89,6 +89,14 @@ tm ctimeGMT() {
     return gmt;
 }
 
+tm ctimeLocal() {
+    auto now = system_clock::now();
+    time_t tt = system_clock::to_time_t(now);
+    tm gmt = *localtime(&tt);
+
+    return gmt;
+}
+
 system_clock::duration timeSinceEpoch() {
     auto now = system_clock::now();
     return now.time_since_epoch();
@@ -118,7 +126,22 @@ tuple<tm, Int16> instant(Bool gmt) {
     return std::make_tuple(ctm, milli);
 }
 
+Bool isLeap(Int32 year) {
+    if(year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)){
+        return True;
+    }
+    return False;
+}
 
+Bool is30Month(Int8 month) {
+    if(     month == Month::April ||
+            month == Month::June ||
+            month == Month::September ||
+            month == Month::November){
+        return True;
+    }
+    return False;
+}
 
 class Date {
 private:
@@ -126,29 +149,18 @@ private:
     Int8 _month;
     Int8 _day;
 
-    static bool isLeap(Int32 year) {
-        return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
-    }
-
-    static bool is30Month(Int8 month) {
-        return  month == Month::April ||
-                month == Month::June ||
-                month == Month::September ||
-                month == Month::November;
-    }
-
     void validate() {
         checkParamBetween("month", _month, 1, 12);
         checkParamBetween("day", _day, 1, 31); //just a quick check
 
         if (_month == Month::February) {
-            if (isLeap(_year) == false && _day > 28) {
+            if (ylib::core::isLeap(_year) == False && _day > 28) {
                 throw Exception(sfput("Invalid day field for month february. \
                                         Got: ${}, expected [1, 28].", _day));
             }
         }
 
-        if (is30Month(_month) && _day > 30) {
+        if (ylib::core::is30Month(_month) == True && _day > 30) {
             throw Exception(sfput("Invalid date for month ${}. Expected \
                     between 1 and 30, but got: ${} instead.", _month, _day));
             
@@ -191,8 +203,8 @@ public:
         return _day;
     }
 
-    bool isLeap() {
-        return Date::isLeap(_year);
+    Bool isLeap() {
+        return ylib::core::isLeap(_year);
     }
 
     string toString() const {
@@ -205,6 +217,87 @@ public:
         return ss.str();
     }
 };
+
+
+
+class LocalDate {
+private:
+    Int32 _year;
+    Int8 _month;
+    Int8 _day;
+
+    void validate() {
+        checkParamBetween("month", _month, 1, 12);
+        checkParamBetween("day", _day, 1, 31); //just a quick check
+
+        if (_month == Month::February) {
+            if (ylib::core::isLeap(_year) == False && _day > 28) {
+                throw Exception(sfput("Invalid day field for month february. \
+                                        Got: ${}, expected [1, 28].", _day));
+            }
+        }
+
+        if (ylib::core::is30Month(_month) == True && _day > 30) {
+            throw Exception(sfput("Invalid date for month ${}. Expected \
+                    between 1 and 30, but got: ${} instead.", _month, _day));
+            
+        }
+    }
+
+    void init(const tm& t) {
+        _year = (Int32)(1900 + t.tm_year);
+        _month = (Int8)(t.tm_mon + 1);
+        _day = (Int8)t.tm_mday;
+        validate();
+    }
+
+public:
+    
+    LocalDate(tm& t) {
+        init(t);
+    }
+
+    LocalDate()  {
+        init(ctimeLocal());
+    }
+
+    LocalDate(Int32 year, Int8 month, Int8 day) {
+        _year = year;
+        _month = month;
+        _day = day;
+        validate();
+    }
+
+    Int32 year() const{
+        return _year;
+    }
+
+    Int8 month() const {
+        return _month;
+    }
+
+    Int8 day() const {
+        return _day;
+    }
+
+    Bool isLeap() {
+        return ylib::core::isLeap(_year);
+    }
+
+    string toString() const {
+        stringstream ss;
+        ss << _year;
+        ss << '-';
+        ss << numFill(_month, 2, '0');
+        ss << '-';
+        ss << numFill(_day, 2, '0');
+        return ss.str();
+    }
+};
+
+
+
+
 
 
 class Time {
@@ -396,6 +489,19 @@ public:
         return DateTime();
     }
 
+    static DateTime from(Int64 millis){
+
+
+        time_t tt = (millis / (time_t)1000);
+        Int16 milli = (Int16)(millis % (Int16)1000);
+
+    
+        tm ctm = *gmtime(&tt);
+        Date date{ctm};
+        Time time{ctm, milli};
+        return DateTime(date, time);
+    }
+
     DateTime(Date date, Time time) :_date{ date }, _time{time} {
         
     }
@@ -426,12 +532,60 @@ public:
     }
 };
 
+class LocalDateTime {
+private:
+    LocalDate _date;
+    LocalTime _time;
 
-DateTime now() {
+
+public:
+    static LocalDateTime now(){
+        return LocalDateTime();
+    }
+
+    LocalDateTime(LocalDate date, LocalTime time) :_date{ date }, _time{time} {
+        
+    }
+
+    LocalDateTime() {
+        tuple<tm, Int16> ins = instant(False);
+        tm ctm = std::get<0>(ins);
+        Int16 milli = std::get<1>(ins);
+
+        _date = LocalDate(ctm);
+        _time = LocalTime(ctm, milli);
+    }
+
+    LocalDate date() const {
+        return _date;
+    }
+
+    LocalTime time() const {
+        return _time;
+    }
+
+    string toString() {
+        stringstream ss;
+        ss << _date.toString();
+        ss << " ";
+        ss << _time.toString();
+        return ss.str();
+    }
+};
+
+
+DateTime nowGMT() {
 
     DateTime ans;
     return ans;
 }
+
+LocalDateTime nowLocal() {
+
+    LocalDateTime ans;
+    return ans;
+}
+
 
 
 }

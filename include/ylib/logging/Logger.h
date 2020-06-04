@@ -26,7 +26,7 @@ std::mutex __logger_get_lock;
 class Entry {
 public:
     string level;
-    LocalTime time; //local time
+    LocalDateTime time; //local time
     string msg;
 };
 
@@ -57,7 +57,7 @@ private:
         Sync sync{ __logger_write_lock };
 
         string level = entry.level;
-        string time = entry.time.toString();
+        string time = entry.time.time().toString();
         string msg = entry.msg;
         
         stringstream ss;
@@ -83,7 +83,7 @@ private:
 
         string txt = ss.str();
 
-        string date = entry.time.toString();
+        string date = entry.time.date().toString();
         string file = date + ".log";
 
         string soutdir = _outDir;
