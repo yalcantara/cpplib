@@ -85,8 +85,16 @@ namespace io {
         fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
 
         char* txt = (char*)malloc(fsize + 1);
-        fread(txt, 1, fsize, f);
+        size_t totalRead = fread(txt, 1, fsize, f);
         fclose(f);
+
+        if(totalRead != fsize){
+            stringstream ss;
+            ss << "Error while reading file: '";
+            ss << path;
+            ss << "'.";
+            throw Exception(ss.str());
+        }
 
         txt[fsize] = 0;
 
