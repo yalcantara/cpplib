@@ -116,6 +116,17 @@ private:
                                 "The dpiNativeTypeNum is: ${}.", _col, _nativeTypeNum));
     }
 
+    dpiTimestamp dataToTimestamp() {
+
+        if(_nativeTypeNum == DPI_NATIVE_TYPE_TIMESTAMP){
+            dpiTimestamp val = _data->value.asTimestamp;
+            return (dpiTimestamp)val;
+        }
+        
+        throw Exception(sfput(  "Could not convert column index ${} to dpiTimestamp. "
+                                "The dpiNativeTypeNum is: ${}.", _col, _nativeTypeNum));
+    }
+
     string dataToString() {
         if(_nativeTypeNum == DPI_NATIVE_TYPE_BYTES){
             dpiBytes val = _data->value.asBytes;
@@ -179,6 +190,14 @@ public:
         return dataToString();
     }
 
+    optional<string> getStringOpt(unsigned int col){
+        fetchCol(col);
+        if(dpiData_getIsNull(_data) == 1){
+            return std::nullopt;
+        }
+        return dataToString();
+    }
+
     Int64 getInt64(unsigned int col){
         fetchCol(col);
         return dataToInt64();
@@ -186,6 +205,24 @@ public:
 
     Int32 getInt32(unsigned int col){
         return (Int32)getInt64(col);
+    }
+
+    Date getDate(unsigned int col){
+        fetchCol(col);
+        dpiTimestamp timestamp = dataToTimestamp();
+
+        tm t = ctimeGMT();
+        t.tm_year   = timestamp.year - 1900;
+        t.tm_mon    = timestamp.month - 1;
+        t.tm_mday   = timestamp.day;
+
+        time_t tt = timegm(&t) + 
+                    (timestamp.tzHourOffset     * 60 * 60) + 
+                    (timestamp.tzMinuteOffset   * 60);
+
+        tm t2 = *gmtime(&tt);
+
+        return Date(t2);
     }
 };
 
@@ -370,7 +407,7 @@ public:
         bindByPos(col, DPI_NATIVE_TYPE_BOOLEAN, data);
     }
 
-    void setDateTime(const char* param, const core::DateTime& val){
+    void setDateTime(const char* param, const core::DateTime val){
         dpiData data;
         Date date = val.date();
         Time time = val.time();
@@ -384,7 +421,53 @@ public:
                                     time.sec(), 
                                     fractions,
                                     0, 0);
+        bindByName(param, DPI_NATIVE_TYPE_TIMESTAMP, data);
+    }
 
+    void setDateTime(unsigned int col, const core::DateTime val){
+        dpiData data;
+        Date date = val.date();
+        Time time = val.time();
+        Int32 fractions =  time.milli();
+        fractions = fractions * ((Int32)1000000);
+        dpiData_setTimestamp(&data, date.year(), 
+                                    date.month(), 
+                                    date.day(), 
+                                    time.hour(), 
+                                    time.min(), 
+                                    time.sec(), 
+                                    fractions,
+                                    0, 0);
+        bindByPos(col, DPI_NATIVE_TYPE_TIMESTAMP, data);
+    }
+
+    void setDateTimeOpt(const char* param, const optional<core::DateTime> val){
+        if(val.has_value()){
+            setDateTime(param, val.value());
+        }else{
+            setNull(param, DPI_NATIVE_TYPE_TIMESTAMP);
+        }
+    }
+
+    void setDateTimeOpt(unsigned int col, const optional<core::DateTime> val){
+        if(val.has_value()){
+            setDateTime(col, val.value());
+        }else{
+            setNull(col, DPI_NATIVE_TYPE_TIMESTAMP);
+        }
+    }
+
+    void setDate(const char* param, const core::Date& date){
+        dpiData data;
+
+        dpiData_setTimestamp(&data, date.year(), 
+                                    date.month(), 
+                                    date.day(), 
+                                    0, 
+                                    0, 
+                                    0, 
+                                    0,
+                                    0, 0);
         bindByName(param, DPI_NATIVE_TYPE_TIMESTAMP, data);
     }
 
@@ -441,6 +524,8 @@ public:
         return ans;
     }
 
+    
+
     virtual ~DBStatement(){
         try{
             if(_stmt){
@@ -486,6 +571,12 @@ public:
         DBStatement stmt{_ctx, _conn, sql};
         return stmt;
     }
+
+    DBStatement statement(string sql){
+        DBStatement stmt{_ctx, _conn, sql.c_str()};
+        return stmt;
+    }
+
 
 
 
@@ -591,6 +682,33 @@ public:
     }
 };
 
+
+
+Int64 getLastInsertedPKInt64(DBConnection& conn, DBStatement& stmt, string table){
+
+    string rowId = stmt.getLastRowId(); //Oracle's ROWID value, not PK
+
+    stringstream ss;
+    ss << "select id from ";
+    ss << table;
+    ss << " where rowid = :1";
+    string sql = ss.str();
+    auto idstmt = conn.statement(sql);
+
+    idstmt.setString(1, rowId);
+    auto rs = idstmt.execQuery();
+
+    if (rs.next() == True) {
+        return rs.getInt64(1);
+    }
+
+    throw Exception("Could not get the PK of the last inserted record.");
+}
+
+Int64 getLastInsertedPKInt64(DBConnection& conn, DBStatement& stmt, const char* table){
+    string stable{table};
+    return getLastInsertedPKInt64(conn, stmt, stable);
+}
 
 
 }

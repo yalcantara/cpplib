@@ -17,15 +17,13 @@ target_link_libraries(main ${CMAKE_DL_LIBS})
 
 
 
-#Example to add boost and other system libraries
-#find_package(Boost REQUIRED COMPONENTS system)
-#find_package(OpenSSL 1.0.0 REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(OpenSSL 1.0.0 REQUIRED)
 
 
-#target_link_libraries(main
-#        -L/opt/mongo-cxx-driver/lib -lbsoncxx
-#        -L/opt/mongo-cxx-driver/lib -lmongocxx
-#        cpprest
-#        Boost::boost
-#        Boost::system
-#        OpenSSL::SSL)
+target_link_libraries(main
+        cpprest
+        -lstdc++fs
+        Boost::boost
+        Boost::system
+        OpenSSL::SSL)

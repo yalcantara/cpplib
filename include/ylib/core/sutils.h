@@ -2,11 +2,45 @@
 
 #include <sstream>
 #include <algorithm>
+#include <optional>
 #include <ylib/core/lang.h>
 
 namespace ylib {
 namespace core {
 
+
+string fieldToString(const char* field, const optional<string>& val){
+	if(val.has_value() == true){
+		stringstream ss;
+		ss << field;
+		ss << ": '";
+		ss << val.value();
+		ss << "'";
+		return ss.str();
+	}
+
+	stringstream ss;
+	ss << field;
+	ss << ": ";
+	ss << "(unassigned)";
+	return ss.str();
+}
+
+string fieldToString(const char* field, const optional<double>& val){
+	if(val.has_value() == true){
+		stringstream ss;
+		ss << field;
+		ss << ": ";
+		ss << val.value();
+		return ss.str();
+	}
+
+	stringstream ss;
+	ss << field;
+	ss << ": ";
+	ss << "(unassigned)";
+	return ss.str();
+}
 
 void findAndReplaceInplace(string& txt, const string& search, const string& replace) {
     size_t pos = 0;
@@ -22,14 +56,36 @@ string findAndReplace(const string& txt, const string& search, const string& rep
 	return copy;
 }
         
-bool endsWith(string& txt, const char c) {
+Bool endsWith(string& txt, const char c) {
 	if (txt.length() == 0) {
-		return false;
+		return False;
 	}
 
 	size_t idx = txt.length() - 1;
-	return txt.at(idx) == c;
+	if( txt.at(idx) == c){
+		return True;
+	}
+
+	return False;
 }
+
+
+
+Bool endsWith(const std::string& str, const std::string& suffix){
+    if(	str.size() >= suffix.size() && 
+		0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix)){
+		return True;
+	}
+
+	return False;
+}
+
+Bool endsWith(const std::string& str, const char* suffix){
+	std::string s = suffix;
+	return endsWith(str, s);
+}
+
+
 
 string repeat(Int16 count, const char c) {
 	stringstream ss;

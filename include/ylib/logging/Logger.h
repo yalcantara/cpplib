@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ylib/core/lang.h>
-#include <ylib/core/system.h>
+#include <ylib/core/time.h>
 #include <ylib/io/io.h>
 #include <ylib/thread/Sync.h>
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <iostream>
 #include <sstream>
 #include <cstdarg>
@@ -16,6 +17,10 @@ using namespace std;
 #define Int8 int8_t
 #endif // !Int8
 
+
+#ifndef UInt8
+#define UInt8 uint8_t
+#endif // !UInt8
 
 #ifndef Int16
 #define Int16 int16_t
@@ -427,6 +432,40 @@ void println(const Exception& ex){
 	string name = typeid(ex).name();
 	string txt = "Exception thrown " + name +": " + smsg;
 	println(txt);
+}
+
+void print(ostringstream& oss, const std::vector<string>& vec, Bool horizontal) {
+
+
+	std::size_t size = vec.size();
+
+	oss << "[";
+	for (std::size_t i = 0; i < size; i++) {
+		const std::string& e = vec[i];
+		oss << e;
+		if ((i + 1) < size) {
+			if(horizontal == True) {
+				oss << ", ";
+			}else{
+				oss << "," << std::endl;
+			}
+		}
+	}
+	oss << "]";
+}
+
+string vec_to_string(const std::vector<string>& vec, Bool horizontal){
+	ostringstream oss;
+	print(oss, vec, horizontal);
+	return oss.str();
+}
+
+void println(const std::vector<string>& vec, Bool horizontal){
+	println(vec_to_string(vec, horizontal));
+}
+
+void println(const std::vector<string>& vec){
+	println(vec, True);
 }
 //====================================================
 

@@ -176,7 +176,18 @@ private:
 
 public:
     
-    Date(tm& t) {
+    static Date today(){
+        return Date();
+    }
+
+    static Date yesterday(){
+        time_t y = time(NULL) - (60 * 60 * 24);
+        tm t = *gmtime(&y);
+        return Date(t);
+    }
+
+
+    Date(tm t) {
         init(t);
     }
 
@@ -205,6 +216,29 @@ public:
 
     Bool isLeap() {
         return ylib::core::isLeap(_year);
+    }
+
+    time_t toUnixTime(){
+        tm t = ctimeGMT();
+        t.tm_year = _year - 1900;
+        t.tm_mon = _month - 1;
+        t.tm_mday = _day;
+        t.tm_hour = 0;
+        t.tm_min = 0;
+        t.tm_sec = 0;
+
+        time_t ans = timegm(&t);
+        return ans;
+    }
+
+    Date addDays(Int32 days){
+        if(days == 0){
+            return *this;
+        }
+
+        time_t epoch = toUnixTime() + (60 * 60 * 24 * days);
+        tm t = *gmtime(&epoch);
+        return Date(t);
     }
 
     string toString() const {
